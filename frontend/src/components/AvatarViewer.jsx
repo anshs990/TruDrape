@@ -191,7 +191,7 @@ export default function Avatar({ gender, measurements }) {
           child.morphTargetInfluences[dict["Height_Max"]] = height;
 
         if (dict["Chest_Max"] !== undefined)
-          child.morphTargetInfluences[dict["Chest_Max"]] = chgit est;
+          child.morphTargetInfluences[dict["Chest_Max"]] = chest;
         if (dict["Waist_Max"] !== undefined)
           child.morphTargetInfluences[dict["Waist_Max"]] = waist;
 
