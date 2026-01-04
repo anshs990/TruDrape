@@ -101,7 +101,7 @@ const Register = () => {
         e.preventDefault();
         if (isFormValid) {
             try {
-                const response = fetch("http://localhost:8000/api/login", {
+                const response = fetch("http://localhost:8000/api/register_user", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(formData),
@@ -138,7 +138,7 @@ const Register = () => {
             };
 
             // Send to backend
-            const response = await fetch("http://localhost:8000/api/auth/google", {
+            const response = await fetch("http://localhost:8000/api/register_user", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
