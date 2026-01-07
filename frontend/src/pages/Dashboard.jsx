@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 // Dummy Data for Clothes
 const CLOTHES_DATA = [
-  { id: 1, name: 'Slim Fit Shirt', category: 'Men', price: '$45', model: '/models/shirt_male.glb', image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=200' },
-  // { id: 2, name: 'Summer Dress', category: 'Women', price: '$60', model: '/models/dress_female.glb', image: 'https://images.unsplash.com/photo-1572804013307-59c8575a6d81?w=200' },
-  { id: 3, name: 'Denim Jacket', category: 'Men', price: '$85', model: '/models/jacket.glb', image: 'https://images.unsplash.com/photo-1551537482-f2075a1d41f2?w=200' },
-  { id: 4, name: 'Floral Skirt', category: 'Women', price: '$35', model: '/models/skirt.glb', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200' },
+  { id: 1, name: 'LINEN POLO SHIRT', category: 'Men', price: '$18.39', model: '/models/shirt_male.glb', image: 'https://static.zara.net/assets/public/c55e/6a2c/296b40599ef5/f378e4139a98/00794185052-e1/00794185052-e1.jpg?ts=1753359858827&w=1280' },
+  { id: 2, name: 'Summer Dress', category: 'Women', price: '$60', model: '/models/dress_female.glb', image: 'https://image.hm.com/assets/hm/14/79/1479c15a622bce64190a65b07d3f96d28a191163.jpg?imwidth=1536' },
+  { id: 3, name: 'BUTTON MIDI DRESS', category: 'Women', price: '$14.99', model: '/models/dress_female.glb', image: 'https://static.zara.net/assets/public/1597/11bb/e47f4b6cbf77/74ec9dc58a3a/03644188719-e1/03644188719-e1.jpg?ts=1757427266775&w=1280' },
+  { id: 4, name: 'Denim Jacket', category: 'Men', price: '$41.99', model: '/models/jacket.glb', image: 'https://static.zara.net/assets/public/80b4/ef69/2e984ef2b04d/908fb9ca321e/03409373426-e1/03409373426-e1.jpg?ts=1756107387255&w=1280' },
+  { id: 5, name: 'Floral Skirt', category: 'Women', price: '$17.99', model: '/models/skirt.glb', image: 'https://static.zara.net/assets/public/fc6e/ba2c/ba8b453a91fb/4a65919cc1e8/08697441307-e1/08697441307-e1.jpg?ts=1757084869494&w=1280' },
 ];
 
 const Dashboard = () => {
@@ -16,13 +17,53 @@ const Dashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDress, setSelectedDress] = useState(null);
-  const [measurements, setMeasurements] = useState({ height: 170, waist: 75, chest: 90 });
+  // const [measurements, setMeasurements] = useState({ height: 170, waist: 75, chest: 90 });
+  const [user, setUser] = useState(null);
+  const [measurements, setMeasurements] = useState(null);
 
   // 1. Check Login Status on Load
   useEffect(() => {
-    const user = localStorage.getItem('userToken'); // Your login logic should set this
-    if (user) setIsLoggedIn(true);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
   }, []);
+
+  useEffect(() => {
+    if (!user?.user_id) return;
+
+    const fetchMeasurements = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/check_measurements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id  : user.user_id }),
+        });
+        const data = await response.json();
+        console.log("Measurements from API:", data);
+        if (data.measurement_exists) {
+          const mapped = { ...data.data, hips: data.data.hip }; // map DB column if needed
+          setMeasurements(mapped); // ✅ replace default state with DB values
+        }
+      } catch (e) {
+        console.error("Error fetching measurements:", e);
+      }
+    };
+
+    fetchMeasurements();
+  }, [user]);
+
+  // console.log(data.height);
+  
+
+  if (!measurements) {
+    return <div style={{ color: "white", padding: 20 }}>Loading measurements...</div>;
+  }
+
+  // Calculate scales (baseline values should match your default model sizes)
+  const heightScale = measurements.height / 170;
+  const chestScale = measurements.chest / 90;
+  const waistScale = measurements.waist / 75;
+  const hipsScale = measurements.hips / 95;
+
 
   const filteredClothes = selectedCategory === 'All' 
     ? CLOTHES_DATA 
@@ -68,36 +109,38 @@ const Dashboard = () => {
       </div>
 
       {/* RIGHT SIDE: 3D FITTING ROOM (Protected) */}
-      <div style={fittingRoomSection}>
-        {!isLoggedIn ? (
-          <div style={overlayBlur}>
-            <h3>Login Required</h3>
-            <p>Please log in to access the 3D Virtual Fitting Room and view your custom measurements.</p>
-            <button onClick={() => navigate('/login')} style={loginPromptBtn}>Login Now</button>
-          </div>
+      <div style={{ height: "100%", width: '40%', background: "#111", color: "white" }}>
+        {user?.user_id ? (
+          <Canvas camera={{ position: [0, 1.5, 4] }}>
+            <Suspense fallback={null}>
+              <Stage environment="city" intensity={0.5}>
+                {measurements.gender === "male" ? (
+                  <Gltf
+                    src="/models/male.glb"
+                    scale={[chestScale, heightScale, hipsScale]} // Example non-uniform scaling
+                  />
+                ) : (
+                  <Gltf
+                    src="/models/female.glb"
+                    scale={[chestScale, heightScale, hipsScale]}
+                  />
+                )}
+                {selectedDress && <Gltf src={selectedDress.model} />}
+              </Stage>
+            </Suspense>
+            <OrbitControls
+              makeDefault
+              enableZoom={false}
+              target={[0, 1.5, 0]}   // 👈 look at chest/head level
+            />
+          </Canvas>
         ) : (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={measurementHeader}>
-              <span>Height: {measurements.height}cm</span>
-              <span>Waist: {measurements.waist}cm</span>
-            </div>
-            
-            <div style={{ flex: 1, background: '#000' }}>
-              <Canvas camera={{ position: [0, 1.5, 4] }}>
-                <Suspense fallback={null}>
-                  <Stage environment="city" intensity={0.5} center>
-                    {/* The 3D Human Model */}
-                    <Gltf src="/models/female.glb" scale={[1, measurements.height/170, 1]} />
-                    
-                    {/* The Selected Dress (Imprinted on top) */}
-                    {selectedDress && (
-                       <Gltf src={selectedDress.model} scale={[1.02, measurements.height/170, 1.02]} />
-                    )}
-                  </Stage>
-                </Suspense>
-                <OrbitControls makeDefault />
-              </Canvas>
-            </div>
+          <div style={{ padding: 20 }}>
+            <h2>TRUDRAPE STUDIO</h2>
+            <p>Log in to visualize these garments on your 3D body profile.</p>
+            <button onClick={() => navigate("/login")} style={{ background: "#4CAF50", color: "white", padding: "12px 30px", border: "none", borderRadius: 5, cursor: "pointer", fontWeight: "bold" }}>
+              LOGIN
+            </button>
           </div>
         )}
       </div>

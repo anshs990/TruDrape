@@ -81,3 +81,47 @@ def register_or_login(data: RegisterRequest):
         print(f"User DB Error: {e}")
         # Return 500 but include the specific error for debugging
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/api/check_measurements")
+def check_measurements(data:dict):
+    try:
+        conn = pyodbc.connect(get_conn_str())
+        cursor = conn.cursor()
+
+        user_id = data.get("user_id")
+
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id is required")
+
+        query = """
+            SELECT *
+            FROM [trudrape].[user_measurement]
+            WHERE user_id = ?
+        """
+        cursor.execute(query, user_id)
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            return {
+                "status": "Data doesn't exists",
+                "measurement_exists": False,
+                "data": None
+            }
+
+        columns = [column[0] for column in cursor.description]
+        measurement_data = dict(zip(columns, row))
+
+        conn.close()
+
+        return {
+            "status": "success",
+            "measurement_exists": True,
+            "data": measurement_data
+        }
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Measurement Fetch Error: {e}")
+        raise HTTPException(status_code=500, detail="Database error")
