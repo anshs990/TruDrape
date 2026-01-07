@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import { GoogleLogin } from '@react-oauth/google';
+import { log } from 'three';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const Login = () => {
     e.preventDefault();
     console.log("Logging in with:", formData);
     // Logic for FastAPI Auth will go here later
-    navigate('/dashboard');
+    // navigate('/dashboard');
   };
 
   const handleGoogleLogin = async (credentialResponse) => {        
@@ -38,10 +39,37 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+      const result = await response.json();
 
-      if (response.ok) {
-        alert(`Welcome ${decoded.given_name}!`);
-        navigate('/dashboard');
+      localStorage.setItem("user", JSON.stringify({
+        user_id: result.user_id,
+        firstName: decoded.given_name,
+        email: decoded.email
+      }));
+      if (result.status === "success") {
+        const measurementRes = await fetch("http://localhost:8000/api/check_measurements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: result.user_id })
+        });
+
+        const measurementData = await measurementRes.json();
+
+        if(measurementData.status === "success")
+        {
+          if (measurementData.measurement_exists) {
+            localStorage.setItem("measurements", JSON.stringify(measurementData.data));
+            navigate('/')
+          }
+          else
+          {
+            navigate('/3d-model')
+          }
+        }
+        else
+        {
+          navigate('/3d-model')
+        }
       }
     } catch (error) {
       console.error("Error during Google Login:", error);

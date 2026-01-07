@@ -1,10 +1,13 @@
 import React, { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, Line, Text } from "@react-three/drei";
+import { useNavigate, Link } from 'react-router-dom';
 import Avatar from "../components/AvatarViewer"; // Check your path
 import Loader from "../components/Loader"; // Check your path
+import { Navigate } from "react-router-dom";
 
 const ModelViewer = () => {
+  const navigate = useNavigate();
   const [gender, setGender] = useState("female");
   const [measurements, setMeasurements] = useState({
     height: 170,
@@ -12,9 +15,51 @@ const ModelViewer = () => {
     waist: 75,
     hips: 95,
   });
+  const [loading, setLoading] = useState(false);
 
   const handleUpdate = (name, value) => {
     setMeasurements((prev) => ({ ...prev, [name]: Number(value) }));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user?.user_id) {
+        alert("User not logged in!");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare payload matching backend schema
+      const payload = {
+        user_id: user.user_id,
+        gender: gender,
+        height: measurements.height,
+        chest: measurements.chest,
+        waist: measurements.waist,
+        hip: measurements.hips, // Note backend uses singular 'hip'
+        image_url: null, // If you have an image url, add it here
+      };
+
+      const response = await fetch("http://localhost:8000/api/save_measurements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        navigate('/'); // You can replace with nicer UI feedback
+      } else {
+        alert("Failed to save measurements.");
+      }
+    } catch (error) {
+      alert("Error saving measurements: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Measurement line logic
@@ -49,6 +94,15 @@ const ModelViewer = () => {
             />
           </div>
         ))}
+
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          style={{ ...genderBtn(true), marginTop: "20px", width: "100%" }}
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "SAVE MEASUREMENTS"}
+        </button>
       </div>
 
       {/* RIGHT PANEL: 3D VIEW */}

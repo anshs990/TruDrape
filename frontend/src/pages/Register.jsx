@@ -143,10 +143,32 @@ const Register = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
+            const result = await response.json();
 
-            if (response.ok) {
-                alert(`Welcome ${decoded.given_name}!`);
-                navigate('/dashboard');
+            localStorage.setItem("user", JSON.stringify({
+                user_id: result.user_id,
+                firstName: decoded.given_name,
+                email: decoded.email
+            }));
+            if (result.status === "success") {
+                const measurementRes = await fetch("http://localhost:8000/api/check_measurements", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: result.user_id })
+                });
+
+                const measurementData = await measurementRes.json();
+
+                if(measurementData.status === "success")
+                {
+                    if (measurementData.measurement_exists) {
+                        localStorage.setItem("measurements", JSON.stringify(measurementData.data));
+                    }
+                }
+                else
+                {
+                    navigate('/3d-model')
+                }
             }
         } catch (error) {
             console.error("Error during Google Login:", error);
