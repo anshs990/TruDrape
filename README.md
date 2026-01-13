@@ -22,10 +22,10 @@ The system follows a purely **Python-based** microservices pattern, designed for
 
 ```mermaid
 graph LR
-    A[User / Frontend] -- Uploads Image --> B[Azure Blob Storage]
-    B -- Triggers Event --> C[Azure Function (Orchestrator)]
-    C -- Updates Status --> D[Azure SQL Database]
-    C -- Calls API --> E[AI Engine (ACI + GPU)]
+    A["User / Frontend"] -- Uploads Image --> B["Azure Blob Storage"]
+    B -- Triggers Event --> C["Azure Function (Orchestrator)"]
+    C -- Updates Status --> D["Azure SQL Database"]
+    C -- Calls API --> E["AI Engine (ACI + GPU)"]
     E -- Generates & Uploads 3D --> B
     E -- Returns Success --> C
 
