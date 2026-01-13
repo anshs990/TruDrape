@@ -49,12 +49,12 @@ The system leverages **Hunyuan3D-2.1** for geometry and texture synthesis and is
 
 ```mermaid
 graph LR
-    A[User / Frontend] -->|Upload Image| B[Azure Blob Storage]
-    B -->|Trigger Event| C[Azure Function Orchestrator]
-    C -->|Update Status| D[Azure SQL Database]
-    C -->|Call API| E[AI Engine (ACI + GPU)]
-    E -->|Upload 3D Model| B
-    E -->|Return Result| C
+    A["User / Frontend"] -->|"Upload Image"| B["Azure Blob Storage"]
+    B -->|"Trigger Event"| C["Azure Function Orchestrator"]
+    C -->|"Update Status"| D["Azure SQL Database"]
+    C -->|"Call API"| E["AI Engine (ACI + GPU)"]
+    E -->|"Upload 3D Model"| B
+    E -->|"Return Result"| C
 ```
 
 ---
