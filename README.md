@@ -1,16 +1,33 @@
-👗 TruDrape: AI-Powered 2D-to-3D Clothing Pipeline
-TruDrape is a cloud-native generative AI system that automatically transforms 2D clothing images into high-fidelity 3D assets (.glb). It leverages Hunyuan3D-2.1 for geometry and texture synthesis, orchestrated entirely through Python and Microsoft Azure.
+# 👗 TruDrape: AI-Powered 2D-to-3D Clothing Pipeline
 
-🚀 Project Overview
+**TruDrape** is a cloud-native generative AI system that automatically transforms 2D clothing images into high-fidelity 3D assets (`.glb`). It leverages **Hunyuan3D-2.1** for geometry and texture synthesis, orchestrated entirely through **Python** and **Microsoft Azure**.
+
+---
+
+## 🚀 Project Overview
+
 The goal of TruDrape is to solve the bottleneck in 3D e-commerce content creation.
 
-Input: A standard 2D image of a garment (e.g., a shirt).
+* **Input:** A standard 2D image of a garment (e.g., a shirt).
+* **Process:** The system detects the upload, spins up a GPU-accelerated container, and runs a generative AI pipeline.
+* **Output:** A textured 3D model ready for web viewing or virtual try-on.
 
-Process: The system detects the upload, spins up a GPU-accelerated container, and runs a generative AI pipeline.
+---
 
-Output: A textured 3D model ready for web viewing or virtual try-on.
+## 🏗️ Architecture & Components
 
-🏗️ Architecture
+The system follows a purely **Python-based** microservices pattern, designed for separation of concerns and scalability.
+
+### System Diagram
+
+```mermaid
+graph LR
+    A[User / Frontend] -- Uploads Image --> B[Azure Blob Storage]
+    B -- Triggers Event --> C[Azure Function (Orchestrator)]
+    C -- Updates Status --> D[Azure SQL Database]
+    C -- Calls API --> E[AI Engine (ACI + GPU)]
+    E -- Generates & Uploads 3D --> B
+    E -- Returns Success --> C
 
 The system follows a purely Python-based microservices pattern:
 
