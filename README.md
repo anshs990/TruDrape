@@ -1,185 +1,192 @@
-👗 TruDrape
-AI-Powered 2D-to-3D Clothing Generation Pipeline
+# 👗 TruDrape
 
-TruDrape is a cloud-native generative AI system that automatically converts 2D garment images into high-fidelity 3D assets (.glb).
-It is designed to eliminate the 3D content creation bottleneck in fashion e-commerce and virtual try-on platforms.
+**AI-Powered 2D-to-3D Clothing Generation Pipeline**
 
-The pipeline leverages Hunyuan3D-2.1 for geometry and texture synthesis, orchestrated entirely with Python and deployed on Microsoft Azure.
+TruDrape is a cloud-native generative AI system that converts **2D garment images** into **high-fidelity 3D `.glb` assets**.  
+It is built to streamline 3D content creation for fashion e-commerce, AR, and virtual try-on experiences.
 
-🚀 Project Overview
+The system leverages **Hunyuan3D-2.1** for geometry and texture synthesis and is fully orchestrated using **Python** on **Microsoft Azure**.
 
-TruDrape transforms a single flat clothing image into a production-ready 3D model through an event-driven AI workflow.
+---
 
-Workflow
+## 🚀 Overview
 
-Input: 2D image of a garment (e.g., shirt, dress)
+**Input**
+- A single 2D image of a garment (shirt, dress, hoodie, etc.)
 
-Processing:
+**Processing**
+- Event-driven orchestration
+- GPU-accelerated generative inference
 
-Upload triggers a serverless orchestrator
+**Output**
+- Textured `.glb` 3D model
+- Ready for web, AR, or 3D viewers
 
-A GPU-backed container runs the generative pipeline
+---
 
-Output:
+## ✨ Key Features
 
-Textured 3D .glb file
+- **Generative 3D Modeling**  
+  Produces realistic meshes and PBR textures using Hunyuan3D Shape + Paint pipelines.
 
-Ready for web viewers, AR, or virtual try-on
+- **Event-Driven Pipeline**  
+  Uploading an image automatically triggers the full workflow.
 
-✨ Key Features
+- **Scalable AI Backend**  
+  FastAPI-based GPU inference engine.
 
-Generative 3D Modeling
-Uses Hunyuan3D-2.1 (Shape + Paint pipelines) to generate realistic meshes and PBR textures.
+- **Live Job Tracking**  
+  Status lifecycle: `Queued → Processing → Ready`.
 
-Event-Driven Architecture
-Uploading an image to Blob Storage automatically triggers the full pipeline—no manual intervention.
+- **Cloud-Native Architecture**  
+  Designed for Azure Functions, Blob Storage, SQL, and GPU containers.
 
-Scalable AI Backend
-FastAPI-based inference engine optimized for asynchronous GPU workloads.
+---
 
-Live Status Tracking
-Request lifecycle tracked in real time:
-Queued → Processing → Ready
+## 🏗️ System Architecture
 
-Cloud-Native by Design
-Built for Azure using serverless orchestration and containerized GPU inference.
+### High-Level Flow
 
-
-🏗️ Architecture
-
-TruDrape follows a Python-first microservices architecture with strict separation of concerns.
-
-System Diagram
-
+```mermaid
 graph LR
-    A["User / Frontend"] -- Uploads Image --> B["Azure Blob Storage"]
-    B -- Triggers Event --> C["Azure Function (Orchestrator)"]
-    C -- Updates Status --> D["Azure SQL Database"]
-    C -- Calls API --> E["AI Engine (ACI + GPU)"]
-    E -- Generates & Uploads 3D --> B
-    E -- Returns Success --> C
+    A[User / Frontend] -->|Upload Image| B[Azure Blob Storage]
+    B -->|Trigger Event| C[Azure Function Orchestrator]
+    C -->|Update Status| D[Azure SQL Database]
+    C -->|Call API| E[AI Engine (ACI + GPU)]
+    E -->|Upload 3D Model| B
+    E -->|Return Result| C
+```
 
+---
 
-| Component        | Technology                     | Responsibility                                   |
-| ---------------- | ------------------------------ | ------------------------------------------------ |
-| **Frontend**     | React / Next.js                | Image upload UI and 3D model preview             |
-| **Orchestrator** | Azure Functions (Python)       | Event handling, job coordination, status updates |
-| **AI Engine**    | FastAPI + Hunyuan3D-2.1        | 3D generation and texture synthesis              |
-| **Storage**      | Azure Blob Storage & Azure SQL | Stores images, models, and job metadata          |
+## 🧩 Components
 
+| Component       | Technology                     | Responsibility |
+|-----------------|--------------------------------|----------------|
+| Frontend        | React / Next.js                | Image upload UI and 3D preview |
+| Orchestrator    | Azure Functions (Python)       | Event handling, job coordination |
+| AI Engine       | FastAPI + Hunyuan3D-2.1        | 3D generation and texture synthesis |
+| Storage         | Azure Blob Storage & Azure SQL | Stores images, models, metadata |
 
-🛠️ Installation & Setup
-Prerequisites
+---
 
-Python: 3.10+
+## 🛠️ Prerequisites
 
-Docker
+- **Python** 3.10+
+- **Docker**
+- **Azure CLI**
+- **NVIDIA GPU** (local testing, ≥ 6GB VRAM)
+- **Visual Studio Build Tools 2022**
+  - C++ Desktop Development (required for rasterizers)
 
-Azure CLI
+---
 
-NVIDIA GPU (local testing, ≥ 6GB VRAM)
+## 🧬 AI Engine Setup (Inference Service)
 
-Visual Studio Build Tools 2022
-
-C++ Desktop Development (for rasterizers)
-
-🧬 AI Engine (Inference Service)
-
-This service performs the heavy 3D generation using Hunyuan3D.
-
+```bash
 cd trudrape-ai-engine
 
 # Install dependencies
 pip install -r requirements.txt
-# Ensure C++ rasterizers are compiled per Hunyuan3D documentation
+```
 
+> ⚠️ Ensure C++ rasterizers are compiled according to Hunyuan3D documentation.
+
+```bash
 # Download model weights
 python download_model.py
 
 # Run FastAPI server
 uvicorn main:app --host 0.0.0.0 --port 8001
+```
 
+---
 
-🧠 Orchestrator (Azure Function)
+## 🧠 Orchestrator Setup (Azure Function)
 
-Manages workflow orchestration and system state.
+```bash
 cd trudrape-manager
+```
 
-# Configure local.settings.json
-# Add Blob Storage and SQL connection strings
+1. Configure `local.settings.json`
+   - Azure Blob Storage connection string
+   - Azure SQL connection string
 
-# Run locally
+```bash
+# Start function locally
 func start
+```
 
-💻 Frontend
+---
 
-User-facing interface for uploads and visualization.
+## 💻 Frontend Setup
 
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
+---
 
-☁️ Deployment Workflow
+## ☁️ Deployment Workflow
 
-Build AI Engine Image
+1. **Build AI Engine Image**
+   - Dockerize FastAPI + Hunyuan3D
+   - Push image to Azure Container Registry (ACR)
 
-Dockerize the FastAPI + Hunyuan3D service
+2. **Deploy GPU Container**
+   - Create Azure Container Instance with GPU support
 
-Push image to Azure Container Registry (ACR)
+3. **Deploy Orchestrator**
+   - Publish Python Azure Function
 
-Deploy GPU Container
+4. **Connect Services**
+   - Set `AI_ENGINE_URL` in Function App settings to ACI endpoint
 
-Launch Azure Container Instance (ACI) with GPU support
+---
 
-Deploy Orchestrator
+## 📦 API Reference
 
-Publish Python Azure Function
+### `POST /generate`
 
-Connect Services
-
-Set AI_ENGINE_URL in Function App settings to ACI endpoint
-
-
-📦 API Reference
-POST /generate
-
-Description:
 Generates a 3D model from a provided image URL.
 
-Request
-
+#### Request
+```json
 {
   "image_url": "https://example.com/image.jpg"
 }
+```
 
+#### Processing Steps
+1. Download image  
+2. Generate mesh (Shape pipeline)  
+3. Apply textures (Paint pipeline)  
+4. Export `.glb`
 
-Processing Steps
-
-Download image
-
-Generate mesh (Shape pipeline)
-
-Apply textures (Paint pipeline)
-
-Export .glb
-
-Response
-
+#### Response
+```json
 {
   "model_url": "https://example.com/output.glb",
   "status": "success"
 }
+```
 
-🤝 Contributing
+---
+
+## 🤝 Contributing
 
 Contributions are welcome.
 
-Fork the repository
+- Fork the repository
+- Create a feature branch
+- Open a pull request
 
-Create a feature branch
+For major changes, please open an issue first.
 
-Submit a pull request
+---
 
-For major changes, please open an issue first to discuss the proposal.
+## 📄 License
 
+Specify your license here (e.g., MIT, Apache 2.0).
