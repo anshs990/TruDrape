@@ -24,6 +24,24 @@ The system leverages **Hunyuan3D-2.1** for geometry and texture synthesis and is
 
 ---
 
+
+## 🚧 Project Status
+
+TruDrape is an **active work in progress**.
+
+Core infrastructure, orchestration, and the AI inference pipeline are implemented and functional.  
+The project is currently focused on:
+
+- Improving mesh quality and texture fidelity
+- Performance optimization for GPU inference
+- Expanding garment category support
+- Enhancing error handling and observability
+- Frontend UX and 3D viewer refinements
+
+APIs, architecture, and internal components may evolve as development continues.
+
+---
+
 ## ✨ Key Features
 
 - **Generative 3D Modeling**  
@@ -189,4 +207,4 @@ For major changes, please open an issue first.
 
 ## 📄 License
 
-Specify your license here (e.g., MIT, Apache 2.0).
+MIT Licesnce
